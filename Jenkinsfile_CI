@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
     
@@ -11,7 +12,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'docker', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps'
+                git branch: 'docker', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps.git'
             }
         }
         
@@ -58,5 +59,43 @@ pipeline {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
+        
+        stage('Build-Tag & Push Backend Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        dir('api') {
+                            sh 'docker build -t fendimohamed/backend:latest .'
+                            sh 'trivy image --format table -o backend-image-report.html fendimohamed/backend:latest '
+                            sh 'docker push fendimohamed/backend:latest'
+                           
+                        }
+                    }
+                }
+            }
+        }  
+            
+        stage('Build-Tag & Push Frontend Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        dir('client') {
+                            sh 'docker build -t fendimohamed/frontend:latest .'
+                            sh 'trivy image --format table -o frontend-image-report.html fendimohamed/frontend:latest '
+                            sh 'docker push fendimohamed/frontend:latest'
+                        }
+                    }
+                }
+            }
+             
+        }  
+        stage('Docker Deploy via Compose') {
+            steps {
+                script {
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
+            
     }
 }
