@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
     
@@ -11,7 +12,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'dev', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps'
+                git branch: 'k8s-dev', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps.git'
             }
         }
         
@@ -58,5 +59,63 @@ pipeline {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
+        
+        stage('Build-Tag & Push Backend Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        dir('api') {
+                            sh 'docker build -t fendimohamed/backend:latest .'
+                            sh 'trivy image --format table -o backend-image-report.html fendimohamed/backend:latest '
+                            sh 'docker push fendimohamed/backend:latest'
+                           
+                        }
+                    }
+                }
+            }
+        }  
+            
+        stage('Build-Tag & Push Frontend Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        dir('client') {
+                            sh 'docker build -t fendimohamed/frontend:latest .'
+                            sh 'trivy image --format table -o frontend-image-report.html fendimohamed/frontend:latest '
+                            sh 'docker push fendimohamed/frontend:latest'
+                        }
+                    }
+                }
+            }
+             
+        }  
+        
+        stage('K8-deploy') {
+            steps {
+                script {
+                    withKubeConfig(caCertificate: '', clusterName: 'devopsshack-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'dev', restrictKubeConfigAccess: false, serverUrl: 'https://042CDFB283295491DDF7A7A422346F3B.gr7.ap-south-1.eks.amazonaws.com') {
+                            sh 'kubectl apply -f k8s-dev/sc.yaml -n dev'
+                            sh 'kubectl apply -f k8s-dev/mysql.yaml -n dev'
+                            sh 'kubectl apply -f k8s-dev/backend.yaml -n dev'
+                            sh 'kubectl apply -f k8s-dev/frontend.yaml -n dev'
+                            sleep 30
+                        }
+                }
+            }
+        }
+        
+        stage('verify-K8-deploy') {
+            steps {
+                script {
+                    withKubeConfig(caCertificate: '', clusterName: 'devopsshack-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'dev', restrictKubeConfigAccess: false, serverUrl: 'https://042CDFB283295491DDF7A7A422346F3B.gr7.ap-south-1.eks.amazonaws.com') {
+                            sh 'kubectl get pods -n dev'
+                            sh 'kubectl get svc -n dev'
+                            
+                        }
+                }
+            }
+        }
+        
+            
     }
 }
