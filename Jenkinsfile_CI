@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'dev', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps'
+                git branch: 'docker', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps'
             }
         }
         
