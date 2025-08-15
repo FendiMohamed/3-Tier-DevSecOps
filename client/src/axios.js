@@ -1,7 +1,5 @@
-// src/axios.js
 import axios from 'axios';
 
-// Dynamic base URL: in local dev (CRA dev server) call backend directly, in prod use same-origin /api.
 const baseURL = window.location.hostname === 'localhost'
   ? 'http://localhost:5000/api'
   : '/api';
