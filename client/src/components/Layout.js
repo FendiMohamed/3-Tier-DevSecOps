@@ -4,7 +4,7 @@ import InfoPopup from './InfoPopup';
 import AnimatedBanner from './AnimatedBanner';
 
 const QUOTES = [
-  'Focus on being productive instead of busy.. – Tim Ferriss',
+  'Focus on being productive instead of busy. – Tim Ferriss',
   'It always seems impossible until it is done. – Nelson Mandela',
   'Do the hard things first.',
   'What gets scheduled gets done.',
