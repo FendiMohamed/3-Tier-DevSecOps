@@ -21,7 +21,7 @@ function TodoDashboard() {
 
   const fetchTodos = () => {
     setLoading(true);
-    axios.get('/api/todos')
+  axios.get('/todos')
       .then(res => setTodos(res.data))
       .catch(err => {
         if (err.response?.status === 401) logout();
@@ -40,14 +40,14 @@ function TodoDashboard() {
       due_date: form.due_date || undefined
     };
     if (form.id) {
-      axios.put(`/api/todos/${form.id}`, payload).then(fetchTodos).then(resetForm);
+  axios.put(`/todos/${form.id}`, payload).then(fetchTodos).then(resetForm);
     } else {
-      axios.post('/api/todos', payload).then(fetchTodos).then(resetForm);
+  axios.post('/todos', payload).then(fetchTodos).then(resetForm);
     }
   };
 
   const toggleStatus = (todo) => {
-    axios.put(`/api/todos/${todo.id}`, { status: todo.status === 'done' ? 'pending' : 'done' })
+  axios.put(`/todos/${todo.id}`, { status: todo.status === 'done' ? 'pending' : 'done' })
       .then(fetchTodos);
   };
 
@@ -56,7 +56,7 @@ function TodoDashboard() {
   };
 
   const deleteTodo = (id) => {
-    axios.delete(`/api/todos/${id}`).then(fetchTodos);
+  axios.delete(`/todos/${id}`).then(fetchTodos);
   };
 
   const filtered = todos.filter(t => filter === 'all' ? true : filter === 'done' ? t.status === 'done' : t.status === 'pending');
