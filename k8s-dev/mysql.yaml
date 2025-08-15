@@ -3,8 +3,10 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: mysql-secret
+  namespace: prod
   labels:
     app: mysql
+type: Opaque
 stringData:
   MYSQL_ROOT_PASSWORD: Fendi
 
@@ -13,6 +15,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-config
+  namespace: prod
   labels:
     app: mysql
 data:
@@ -23,6 +26,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-initdb-config
+  namespace: prod
   labels:
     app: mysql
 data:
@@ -56,42 +60,30 @@ data:
 
 ---
 apiVersion: v1
-kind: PersistentVolume
+kind: Service
 metadata:
-  name: mysql-pv
+  name: mysql
+  namespace: prod
   labels:
     app: mysql
 spec:
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: ebs-sc
-  persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: /mnt/data/mysql
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc
-  labels:
+  clusterIP: None
+  selector:
     app: mysql
-spec:
-  storageClassName: ebs-sc
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
+  ports:
+    - port: 3306
+      targetPort: 3306
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mysql
+  namespace: prod
+  labels:
+    app: mysql
 spec:
+  serviceName: mysql
   replicas: 1
   selector:
     matchLabels:
@@ -104,6 +96,8 @@ spec:
       containers:
         - name: mysql
           image: mysql:8
+          ports:
+            - containerPort: 3306
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
@@ -115,29 +109,21 @@ spec:
                 configMapKeyRef:
                   name: mysql-config
                   key: MYSQL_DATABASE
-          ports:
-            - containerPort: 3306
           volumeMounts:
-            - name: mysql-storage
+            - name: mysql-persistent-storage
               mountPath: /var/lib/mysql
             - name: initdb
               mountPath: /docker-entrypoint-initdb.d
       volumes:
-        - name: mysql-storage
-          persistentVolumeClaim:
-            claimName: mysql-pvc
         - name: initdb
           configMap:
             name: mysql-initdb-config
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql
-spec:
-  selector:
-    app: mysql
-  ports:
-    - port: 3306
-      targetPort: 3306
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: ebs-sc
+        resources:
+          requests:
+            storage: 5Gi
