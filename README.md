@@ -30,44 +30,57 @@ Proof that the full platform is deployed. Images are ordered from end-user exper
 
 1. Application UI (Production)
 
-- <img src="assets/login.jpg" alt="Application Login Screen" width="400"/>
-- <img src="assets/tasks.jpg" alt="Tasks Management Screen" width="400"/>
+<div align="center">
+  <img src="assets/login.jpg" alt="Application Login Screen" width="400"/>
+  <img src="assets/tasks.jpg" alt="Tasks Management Screen" width="400"/>
+</div>
 
 2. AWS Console
 
-- <img src="assets/eks.jpg" alt="AWS EKS Cluster Console" width="420"/>
-- <img src="assets/nodes.jpg" alt="EKS Node Group Instances" width="420"/>
-- <img src="assets/load-balancers.jpg" alt="AWS Load Balancers List" width="420"/>
-- <img src="assets/ec2.jpg" alt="EC2 Instances Overview" width="420"/>
-- <img src="assets/cloud-formation.jpg" alt="CloudFormation Stacks" width="420"/>
+<div align="center">
+  <img src="assets/eks.jpg" alt="AWS EKS Cluster Console" width="420"/>
+  <img src="assets/nodes.jpg" alt="EKS Node Group Instances" width="420"/>
+  <img src="assets/load-balancers.jpg" alt="AWS Load Balancers List" width="420"/>
+  <img src="assets/ec2.jpg" alt="EC2 Instances Overview" width="420"/>
+  <img src="assets/cloud-formation.jpg" alt="CloudFormation Stacks" width="420"/>
+</div>
 
 3. Kubernetes (kubectl / terminal)
 
-- <img src="assets/prod-all.jpg" alt="Kubernetes prod Namespace Pods" width="500"/>
-- <img src="assets/ingress.jpg" alt="Kubernetes Ingress Resource" width="500"/>
-- <img src="assets/monitoring-all.jpg" alt="Monitoring Namespace Resources" width="500"/>
-- <img src="assets/sonar-terminal.jpg" alt="Sonar Scanner CLI Output" width="500"/>
-- <img src="assets/jenkins.jpg" alt="Jenkins Terminal" width="500"/>
+<div align="center">
+  <img src="assets/prod-all.jpg" alt="Kubernetes prod Namespace Pods" width="500"/>
+  <img src="assets/ingress.jpg" alt="Kubernetes Ingress Resource" width="500"/>
+  <img src="assets/monitoring-all.jpg" alt="Monitoring Namespace Resources" width="500"/>
+  <img src="assets/sonar-terminal.jpg" alt="Sonar Scanner CLI Output" width="500"/>
+  <img src="assets/jenkins.jpg" alt="Jenkins Terminal" width="500"/>
+</div>
 
 4. Jenkins & Quality
 
-- <img src="assets/pipeline.jpg" alt="Jenkins Pipeline Stages View" width="600"/>
-- <img src="assets/credentials.jpg" alt="Jenkins Credentials Configuration" width="600"/>
-- <img src="assets/sonar.jpg" alt="SonarQube Project Overview Dashboard" width="600"/>
-- <img src="assets/sonar-webhook.jpg" alt="SonarQube Webhook Configuration" width="600"/>
-- <img src="assets/jenkins.jpg" alt="Jenkins Terminal" width="600"/>
-- <img src="assets/sonar-terminal.jpg" alt="Sonar Scanner CLI Output (detailed)" width="600"/>
+<div align="center">
+  <img src="assets/pipeline.jpg" alt="Jenkins Pipeline Stages View" width="600"/>
+  <img src="assets/credentials.jpg" alt="Jenkins Credentials Configuration" width="600"/>
+  <img src="assets/users.jpg" alt="Jenkins Users Configuration" width="600"/>
+  <img src="assets/sonar.jpg" alt="SonarQube Project Overview Dashboard" width="600"/>
+  <img src="assets/sonar-webhook.jpg" alt="SonarQube Webhook Configuration" width="600"/>
+  <img src="assets/jenkins.jpg" alt="Jenkins Terminal" width="600"/>
+  <img src="assets/sonar-terminal.jpg" alt="Sonar Scanner CLI Output (detailed)" width="600"/>
+</div>
 
 5. Monitoring
 
-- <img src="assets/grafana.jpg" alt="Grafana Overview Dashboard" width="600"/>
-- <img src="assets/grafana-mysql-pod.jpg" alt="Grafana MySQL Pod Metrics Panel" width="600"/>
-- <img src="assets/grafana-frontend-pod.jpg" alt="Grafana Frontend Pod Metrics Panel" width="600"/>
-- <img src="assets/grafana-kube-system.jpg" alt="Grafana kube-system Namespace Metrics" width="600"/>
+<div align="center">
+  <img src="assets/grafana.jpg" alt="Grafana Overview Dashboard" width="600"/>
+  <img src="assets/grafana-mysql-pod.jpg" alt="Grafana MySQL Pod Metrics Panel" width="600"/>
+  <img src="assets/grafana-frontend-pod.jpg" alt="Grafana Frontend Pod Metrics Panel" width="600"/>
+  <img src="assets/grafana-kube-system.jpg" alt="Grafana kube-system Namespace Metrics" width="600"/>
+</div>
 
 6. Notifications
 
-- <img src="assets/slack.jpg" alt="Slack CI/CD Build Notification" width="420"/>
+<div align="center">
+  <img src="assets/slack.jpg" alt="Slack CI/CD Build Notification" width="420"/>
+</div>
 
 ## 🔐 Application Features
 
