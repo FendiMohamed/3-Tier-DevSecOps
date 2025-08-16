@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'k8s-dev', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps.git'
+                git branch: 'prod', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps.git'
             }
         }
         
@@ -93,11 +93,11 @@ pipeline {
         stage('K8-deploy') {
             steps {
                 script {
-                    withKubeConfig(caCertificate: '', clusterName: 'devopsshack-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'dev', restrictKubeConfigAccess: false, serverUrl: 'https://042CDFB283295491DDF7A7A422346F3B.gr7.ap-south-1.eks.amazonaws.com') {
-                            sh 'kubectl apply -f k8s-dev/sc.yaml -n dev'
-                            sh 'kubectl apply -f k8s-dev/mysql.yaml -n dev'
-                            sh 'kubectl apply -f k8s-dev/backend.yaml -n dev'
-                            sh 'kubectl apply -f k8s-dev/frontend.yaml -n dev'
+                    withKubeConfig(caCertificate: '', clusterName: 'fendimohamed-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'prod', restrictKubeConfigAccess: false, serverUrl: 'https://24A290F7A86E4AB6E6EEBF1594DE4BE5.gr7.us-west-2.eks.amazonaws.com') {
+                            sh 'kubectl apply -f k8s-prod/sc.yaml -n prod'
+                            sh 'kubectl apply -f k8s-prod/mysql.yaml -n prod'
+                            sh 'kubectl apply -f k8s-prod/backend.yaml -n prod'
+                            sh 'kubectl apply -f k8s-prod/frontend.yaml -n prod'
                             sleep 30
                         }
                 }
@@ -107,9 +107,9 @@ pipeline {
         stage('verify-K8-deploy') {
             steps {
                 script {
-                    withKubeConfig(caCertificate: '', clusterName: 'devopsshack-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'dev', restrictKubeConfigAccess: false, serverUrl: 'https://042CDFB283295491DDF7A7A422346F3B.gr7.ap-south-1.eks.amazonaws.com') {
-                            sh 'kubectl get pods -n dev'
-                            sh 'kubectl get svc -n dev'
+                    withKubeConfig(caCertificate: '', clusterName: 'fendimohamed-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'dev', restrictKubeConfigAccess: false, serverUrl: 'https://24A290F7A86E4AB6E6EEBF1594DE4BE5.gr7.us-west-2.eks.amazonaws.com') {
+                            sh 'kubectl get pods -n prod'
+                            sh 'kubectl get svc -n prod'
                             
                         }
                 }
