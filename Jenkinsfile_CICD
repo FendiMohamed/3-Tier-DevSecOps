@@ -1,0 +1,158 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'nodejs23'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+        PROJECT_NAME = 'MY-APP'
+        ENVIRONMENT = 'Production'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'prod', url: 'https://github.com/FendiMohamed/3-Tier-DevSecOps.git'
+            }
+        }
+
+        stage('Frontend Compilation') {
+            steps {
+                dir('client') {
+                    sh 'find . -name "*.js" -exec node --check {} +'
+                }
+            }
+        }
+
+        stage('Backend Compilation') {
+            steps {
+                dir('api') {
+                    sh 'find . -name "*.js" -exec node --check {} +'
+                }
+            }
+        }
+
+        stage('GitLeaks Scan') {
+            steps {
+                sh 'gitleaks detect --source ./client --exit-code 1'
+                sh 'gitleaks detect --source ./api --exit-code 1'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=NodeJS-Project \
+                            -Dsonar.projectKey=NodeJS-Project '''
+                }
+            }
+        }
+
+        stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+
+        stage('Trivy FS Scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+
+        stage('Build-Tag & Push Backend Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        dir('api') {
+                            sh 'docker build -t fendimohamed/backend:latest .'
+                            sh 'trivy image --format table -o backend-image-report.html fendimohamed/backend:latest'
+                            sh 'docker push fendimohamed/backend:latest'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build-Tag & Push Frontend Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        dir('client') {
+                            sh 'docker build -t fendimohamed/frontend:latest .'
+                            sh 'trivy image --format table -o frontend-image-report.html fendimohamed/frontend:latest'
+                            sh 'docker push fendimohamed/frontend:latest'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('K8-deploy') {
+            steps {
+                script {
+                    withKubeConfig(
+                        caCertificate: '',
+                        clusterName: 'fendimohamed-cluster',
+                        contextName: '',
+                        credentialsId: 'k8-token',
+                        namespace: 'prod',
+                        restrictKubeConfigAccess: false,
+                        serverUrl: 'https://24A290F7A86E4AB6E6EEBF1594DE4BE5.gr7.us-west-2.eks.amazonaws.com'
+                    ) {
+                        sh 'kubectl apply -f k8s-prod/sc.yaml -n prod'
+                        sh 'kubectl apply -f k8s-prod/mysql.yaml -n prod'
+                        sh 'kubectl apply -f k8s-prod/backend.yaml -n prod'
+                        sh 'kubectl apply -f k8s-prod/frontend.yaml -n prod'
+                        sleep 30
+                    }
+                }
+            }
+        }
+
+        stage('verify-K8-deploy') {
+            steps {
+                script {
+                    withKubeConfig(
+                        caCertificate: '',
+                        clusterName: 'fendimohamed-cluster',
+                        contextName: '',
+                        credentialsId: 'k8-token',
+                        namespace: 'dev',
+                        restrictKubeConfigAccess: false,
+                        serverUrl: 'https://24A290F7A86E4AB6E6EEBF1594DE4BE5.gr7.us-west-2.eks.amazonaws.com'
+                    ) {
+                        sh 'kubectl get pods -n prod'
+                        sh 'kubectl get svc -n prod'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+                script {
+                    def message = """{ \"text\": \"*✅ ${PROJECT_NAME} Build Successful!*\", \"attachments\": [ { \"color\": \"#36a64f\", \"fields\": [ { \"title\": \"Job\", \"value\": \"${env.JOB_NAME}\", \"short\": true }, { \"title\": \"Build\", \"value\": \"#${env.BUILD_NUMBER}\", \"short\": true }, { \"title\": \"Environment\", \"value\": \"${ENVIRONMENT}\", \"short\": true } ], \"footer\": \"Jenkins CI\", \"footer_icon\": \"https://www.jenkins.io/images/logos/jenkins/jenkins.png\", \"ts\": ${System.currentTimeMillis() / 1000}, \"actions\": [ { \"type\": \"button\", \"text\": \"View Build\", \"url\": \"${env.BUILD_URL}\", \"style\": \"primary\" } ] } ] }"""
+                    sh """curl -X POST -H 'Content-type: application/json' --data '${message}' $SLACK_URL"""
+                }
+            }
+        }
+        failure {
+            withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+                script {
+                    def message = """{ \"text\": \"<!here> *❌ ${PROJECT_NAME} Build Failed!*\", \"attachments\": [ { \"color\": \"#FF0000\", \"fields\": [ { \"title\": \"Job\", \"value\": \"${env.JOB_NAME}\", \"short\": true }, { \"title\": \"Build\", \"value\": \"#${env.BUILD_NUMBER}\", \"short\": true }, { \"title\": \"Environment\", \"value\": \"${ENVIRONMENT}\", \"short\": true } ], \"footer\": \"Jenkins CI\", \"footer_icon\": \"https://www.jenkins.io/images/logos/jenkins/jenkins.png\", \"ts\": ${System.currentTimeMillis() / 1000}, \"actions\": [ { \"type\": \"button\", \"text\": \"View Build Logs\", \"url\": \"${env.BUILD_URL}\", \"style\": \"danger\" } ] } ] }"""
+                    sh """curl -X POST -H 'Content-type: application/json' --data '${message}' $SLACK_URL"""
+                }
+            }
+        }
+        always {
+            echo 'Post-build notification sent'
+        }
+    }
+}
